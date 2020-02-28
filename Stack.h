@@ -1,3 +1,6 @@
+#ifndef __STACK_H__
+#define __STACK_H__
+
 #include "int_types.h"
 
 #include <stdlib.h>
@@ -25,3 +28,5 @@ void* _Stack_top(Stack *st);
 void* _Stack_pop(Stack *st);
 Bool _Stack_empty(Stack *st);
 void _Stack_destroy(Stack **st);
+
+#endif

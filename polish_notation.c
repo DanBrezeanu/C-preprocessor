@@ -5,6 +5,20 @@ Bool isoperation(uint8t e) {
     return (strchr("()+-*/", e) != NULL);
 }
 
+uint8t* clean_expression(uint8t *exp) {
+    uint16t exp_len = strlen((int8t*)exp);
+    uint8t* new_exp = calloc(exp_len, sizeof(uint8t));
+    int32t k = 0;
+    int32t i = 0;
+
+    for (i = 0; i < exp_len; ++i) {
+        if (isdigit(exp[i]) || isoperation(exp[i]))
+            new_exp[k++] = exp[i];
+    }
+
+    return new_exp;
+}
+
 uint32t operation_priority(uint8t e) {
     if (e == '*' || e == '/')
         return 2;
@@ -82,9 +96,11 @@ void add_operation(uint8t operation, Stack *op_stack, Stack *number_stack) {
 }
 
 int32t evaluate_expression(uint8t *expression) {
+    expression = clean_expression(expression);
+
     Stack *op_stack = _Stack_new(sizeof(uint8t));
     Stack *number_stack = _Stack_new(sizeof(int32t));
-    uint32t expression_length = strlen(expression);
+    uint32t expression_length = strlen((int8t*)expression);
     int32t i = 0;
     int32t result = 0;
     
@@ -102,8 +118,11 @@ int32t evaluate_expression(uint8t *expression) {
     while (!op_stack->empty(op_stack))
         evaluate_operation(*(uint8t*)op_stack->pop(op_stack), number_stack);
 
-    result = *(int32t*)number_stack->pop(number_stack);
-    
+    int32t* popped = (int32t*)number_stack->pop(number_stack);
+    result = *popped;
+    free(popped);
+
+    free(expression);
     op_stack->destroy(&op_stack);
     number_stack->destroy(&number_stack);
     return result;
@@ -112,8 +131,11 @@ int32t evaluate_expression(uint8t *expression) {
 
 
 int main() {
-    char exp[] = "((5+3)*2+5*7)/2";
-    printf("%d\n", evaluate_expression(exp));
+    uint8t exp[] = "( (   5 +  3 ) * 2   + 5  * 7) /2\n\n*2";
+    int32t result = evaluate_expression(exp);
+
+    printf("%d\n", result);
+
 
     return 0;
 }   

@@ -12,6 +12,8 @@ Stack* _Stack_new(uint16t sizeofElement) {
     st->empty = &_Stack_empty;
     st->top = &_Stack_top;
     st->destroy = &_Stack_destroy;
+
+    return st;
 }
 
 void _Stack_push(Stack *st, void *e) {
@@ -58,6 +60,11 @@ Bool _Stack_empty(Stack *st) {
 }
 
 void _Stack_destroy(Stack **st) {
+    int32t i = 0;
+    for (i = 0; i < (*st)->size; ++i) {
+        free((*st)->array + i * (*st)->sizeofElement);
+    }
+    
     free((*st)->array);
     free(*st);
 }
