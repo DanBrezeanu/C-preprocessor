@@ -37,6 +37,7 @@ Bool parse_args(HashMap* hm, int32t argc, int8t** argv) {
 
         if (strcmp(argv[i], "-o") == 0) {
             printf("output_file = %s\n", argv[i + 1]);
+            hm->addValue(hm, "__OUTPUT_FILE__", argv[i + 1]);
             ++i;
             continue;
         }
@@ -45,7 +46,8 @@ Bool parse_args(HashMap* hm, int32t argc, int8t** argv) {
     }
 
     printf("input_file = %s\n", (input_file == NULL) ? "stdin" : input_file);
-
+    hm->addValue(hm, "__INPUT_FILE__", input_file);
+    
 
     return true;
 }

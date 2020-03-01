@@ -130,12 +130,12 @@ int32t evaluate_expression(uint8t *expression) {
 
 
 
-int main() {
-    uint8t exp[] = "( (   5 +  3 ) * 2   + 5  * 7) /2\n\n*2";
-    int32t result = evaluate_expression(exp);
+// int main() {
+//     uint8t exp[] = "( (   5 +  3 ) * 2   + 5  * 7) /2\n\n*2";
+//     int32t result = evaluate_expression(exp);
 
-    printf("%d\n", result);
+//     printf("%d\n", result);
 
 
-    return 0;
-}   
+//     return 0;
+// }   
