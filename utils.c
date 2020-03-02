@@ -16,4 +16,3 @@ int32t number_from_string(uint8t *string, int32t *offset) {
 
     return result;
 }
-

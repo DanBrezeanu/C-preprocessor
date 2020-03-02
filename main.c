@@ -31,6 +31,29 @@ uint8t* string_from_number(int32t number) {
     return result;
 }
 
+uint8t* strrep(uint8t **string, uint8t *old_str, uint8t *new_str) {
+    uint8t *start = strstr(*string, old_str);
+    
+    printf("OLD = %s\n", *string);
+
+    if (start == NULL) {
+        return NULL;
+    }
+
+    uint8t *result = calloc(strlen(*string) - strlen(old_str) + strlen(new_str) + 1, sizeof(uint8t));
+
+    strncpy(result, *string, start - *string);
+    strcat(result, new_str);
+    strcat(result, start + strlen(old_str));
+
+    printf("NEW = %s\n", result);
+
+    free(*string);
+    *string = result;
+
+    return result;
+}
+
 Bool isstring(uint8t *value) {
     return (value[0] == '\"' && value[strlen(value) - 1] == '\"');
 }
@@ -73,8 +96,22 @@ void clean_file(uint8t ***content, int32t *lines) {
     *lines = result_lines;
 }
 
+void replace_existing_defines(HashMap *hm, uint8t **line) {
+    uint8t **keys = hm->getKeys(hm);
+    uint8t **values = hm->getValues(hm);
+    uint8t *substr = NULL;
+    int32t i = 0;
+
+    for (i = 0; i < hm->count_entries; ++i) {
+        if ((substr = strstr(*line, keys[i])) && substr != NULL) {
+            strrep(line, keys[i], values[i]);
+        }
+    } 
+}
+
 void preprocess_define_directive(HashMap *hm, uint8t *line) {
-    int32t real_value;
+    
+    replace_existing_defines(hm, &line);
     uint8t *start = strstr(line, "#define ") + strlen("#define ");
     
     //TODO: realloc if necessary
@@ -89,17 +126,21 @@ void preprocess_define_directive(HashMap *hm, uint8t *line) {
         ++start;
     }
 
-    while (isspace(*start)) {
+    while (*start && isspace(*start)) {
         ++start;
     }
 
-    while (*start != '\n') {
+    while (*start && *start != '\n') {
         value[value_len++] = *start;
         ++start;
     }
 
-    if (!isstring(value)) {
-        real_value = evaluate_expression(value);
+
+    if (strlen(value) == 0) {
+        value[0] = value[1] = '\"';
+        hm->addValue(hm, name, value);
+    } else if (!isstring(value)) {
+        int32t real_value = evaluate_expression(value);
         uint8t *real_value_s = string_from_number(real_value);
         hm->addValue(hm, name, real_value_s);
         free(real_value_s);
@@ -147,7 +188,7 @@ void preprocess_file(HashMap *hm) {
             preprocess_define_directive(hm, file_content[i]);
         }
 
-        //
+        
         if ((tmp = strstr(file_content[i], "#undef")) && tmp != NULL && tmp == file_content[i]) {
             preprocess_define_directive(hm, file_content[i]);
         }
@@ -161,6 +202,7 @@ int main(int argc, char** argv) {
     parse_args(hm, argc - 1, argv + 1);
 
     preprocess_file(hm);
+
     hm->print(hm);
      
 

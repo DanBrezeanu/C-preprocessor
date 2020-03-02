@@ -6,7 +6,10 @@ HashMap* _HashMap_new() {
     hm->addValue = &_HashMap_addValue;
     hm->print = &_HashMap_print;
     hm->getValue = &_HashMap_getValue;
+    hm->getKeys = &_HashMap_getKeys;
+    hm->getValues = &_HashMap_getValues;
     hm->exists = &_HashMap_exists;
+    hm->remove = &_HashMap_remove;
     hm->destroy = &_HashMap_destroy;
 
     hm->capacity = 32;
@@ -21,11 +24,11 @@ HashMap* _HashMap_new() {
     return hm;   
 }
 
-Bool _HashMap_addValue(HashMap* self, uint8t* key, uint8t* value) {
+Bool _HashMap_addValue(HashMap *self, uint8t *key, uint8t *value) {
     int32t existing_index = self->exists(self, key);
     if (existing_index != -ENOEXISTS) {
-        self->keys[existing_index] = realloc(self->keys[existing_index], strlen(key) * sizeof(uint8t));
-        self->values[existing_index] = realloc(self->values[existing_index], strlen(value) * sizeof(uint8t));
+        self->keys[existing_index] = realloc(self->keys[existing_index], (strlen(key) + 1) * sizeof(uint8t));
+        self->values[existing_index] = realloc(self->values[existing_index], (strlen(value) + 1) * sizeof(uint8t));
 
         if (self->keys[existing_index] == NULL || self->values[existing_index] == NULL) {
             DIE(ENOMEM);
@@ -47,8 +50,8 @@ Bool _HashMap_addValue(HashMap* self, uint8t* key, uint8t* value) {
         }
     }
 
-    self->keys[self->count_entries] = calloc(strlen(key), sizeof(uint8t));
-    self->values[self->count_entries] = calloc(strlen(value), sizeof(uint8t));
+    self->keys[self->count_entries] = calloc(strlen(key) + 1, sizeof(uint8t));
+    self->values[self->count_entries] = calloc(strlen(value) + 1, sizeof(uint8t));
 
     if (self->keys == NULL || self->values == NULL) {
         DIE(ENOMEM);
@@ -62,7 +65,7 @@ Bool _HashMap_addValue(HashMap* self, uint8t* key, uint8t* value) {
     return true;
 }
 
-int32t _HashMap_exists(HashMap* self, uint8t* key) {
+int32t _HashMap_exists(HashMap *self, uint8t *key) {
     int32t i = 0;
 
     for (i = 0; i < self->count_entries; ++i) {
@@ -73,7 +76,7 @@ int32t _HashMap_exists(HashMap* self, uint8t* key) {
     return -ENOEXISTS;
 }
 
-uint8t* _HashMap_getValue(HashMap* self, uint8t* key) {
+uint8t* _HashMap_getValue(HashMap *self, uint8t *key) {
     int32t i = 0;
 
     for (i = 0; i < self->count_entries; ++i) {
@@ -84,7 +87,42 @@ uint8t* _HashMap_getValue(HashMap* self, uint8t* key) {
     return NULL;
 }
 
-void _HashMap_print(HashMap* self) {
+uint8t** _HashMap_getKeys(HashMap *self) {
+    return self->keys;
+}
+
+uint8t** _HashMap_getValues(HashMap *self) {
+    return self->values;
+}
+
+
+Bool _HashMap_remove(HashMap *self, uint8t *key) {
+    if (!self->exists(self, key))
+        return false;
+    
+    int32t i = 0;
+    Bool found = false;
+
+    for (i = 0; i < self->count_entries; ++i) {
+        if (!found && strcmp(self->keys[i], key) == 0) {
+            found = true;
+        } else if (found) {
+            self->keys[i - 1]   = realloc(self->keys[i - 1], (strlen(self->keys[i]) + 1) * sizeof(uint8t));
+            self->values[i - 1] = realloc(self->values[i - 1], (strlen(self->values[i]) + 1) * sizeof(uint8t));
+
+            strcpy(self->keys[i - 1], self->keys[i]);
+            strcpy(self->values[i - 1], self->values[i]);
+        }
+    }
+
+    free(self->keys[self->count_entries - 1]);
+    free(self->values[self->count_entries - 1]);
+    --self->count_entries;
+
+    return true;
+}
+
+void _HashMap_print(HashMap *self) {
     int32t i = 0;
     
     for (i = 0; i < self->count_entries; ++i) {
@@ -92,7 +130,7 @@ void _HashMap_print(HashMap* self) {
     }
 }
 
-void _HashMap_destroy(HashMap** self) {
+void _HashMap_destroy(HashMap **self) {
     int32t i = 0;
 
     for (i = 0; i < (*self)->count_entries; ++i) {
