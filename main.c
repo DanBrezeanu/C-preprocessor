@@ -33,8 +33,6 @@ uint8t* string_from_number(int32t number) {
 
 uint8t* strrep(uint8t **string, uint8t *old_str, uint8t *new_str) {
     uint8t *start = strstr(*string, old_str);
-    
-    printf("OLD = %s\n", *string);
 
     if (start == NULL) {
         return NULL;
@@ -46,8 +44,6 @@ uint8t* strrep(uint8t **string, uint8t *old_str, uint8t *new_str) {
     strcat(result, new_str);
     strcat(result, start + strlen(old_str));
 
-    printf("NEW = %s\n", result);
-
     free(*string);
     *string = result;
 
@@ -56,6 +52,30 @@ uint8t* strrep(uint8t **string, uint8t *old_str, uint8t *new_str) {
 
 Bool isstring(uint8t *value) {
     return (value[0] == '\"' && value[strlen(value) - 1] == '\"');
+}
+
+void find_key_value(HashMap *hm, uint8t *line, uint8t *key, uint8t *value, uint8t *directive) {
+    if (strcmp(directive, "#define ") == 0)
+        replace_existing_defines(hm, &line);
+    uint8t *start = strstr(line, directive) + strlen(directive);
+    
+    //TODO: realloc if necessary
+    int32t key_len = 0;
+    int32t value_len = 0;
+
+    while (!isspace(*start)) {
+        key[key_len++] = *start;
+        ++start;
+    }
+
+    while (*start && isspace(*start)) {
+        ++start;
+    }
+
+    while (*start && *start != '\n') {
+        value[value_len++] = *start;
+        ++start;
+    }
 }
 
 void clean_file(uint8t ***content, int32t *lines) {
@@ -110,40 +130,22 @@ void replace_existing_defines(HashMap *hm, uint8t **line) {
 }
 
 void preprocess_define_directive(HashMap *hm, uint8t *line) {
-    
-    replace_existing_defines(hm, &line);
-    uint8t *start = strstr(line, "#define ") + strlen("#define ");
-    
-    //TODO: realloc if necessary
-    uint8t *name = calloc(1024, sizeof(uint8t));
-    int32t name_len = 0;
+    uint8t *name, *value;
+    uint8t directive[] = "#define ";
 
-    uint8t *value = calloc(1024, sizeof(uint8t));
-    int32t value_len = 0;
+    name = calloc(MAX_BUFFER, sizeof(uint8t)); 
+    value = calloc(MAX_BUFFER, sizeof(uint8t)); 
 
-    while (!isspace(*start)) {
-        name[name_len++] = *start;
-        ++start;
-    }
-
-    while (*start && isspace(*start)) {
-        ++start;
-    }
-
-    while (*start && *start != '\n') {
-        value[value_len++] = *start;
-        ++start;
-    }
-
+    find_key_value(hm, line, name, value, directive);
 
     if (strlen(value) == 0) {
         value[0] = value[1] = '\"';
         hm->addValue(hm, name, value);
-    } else if (!isstring(value)) {
-        int32t real_value = evaluate_expression(value);
-        uint8t *real_value_s = string_from_number(real_value);
-        hm->addValue(hm, name, real_value_s);
-        free(real_value_s);
+    // } else if (!isstring(value)) {
+    //     int32t real_value = evaluate_expression(value);
+    //     uint8t *real_value_s = string_from_number(real_value);
+    //     hm->addValue(hm, name, real_value_s);
+    //     free(real_value_s);
         
     } else {
         hm->addValue(hm, name, value);
@@ -151,6 +153,36 @@ void preprocess_define_directive(HashMap *hm, uint8t *line) {
 
     free(name);
     free(value);
+}
+
+void preprocess_undef_directive(HashMap *hm, uint8t *line) {
+    uint8t *name, *value;
+    uint8t directive[] = "#undef ";
+
+
+    name = calloc(MAX_BUFFER, sizeof(uint8t)); 
+    value = calloc(MAX_BUFFER, sizeof(uint8t)); 
+
+    find_key_value(hm, line, name, value, directive);
+
+    hm->remove(hm, name);
+
+    free(name);
+    free(value);
+}
+
+Bool preprocess_ifdef_directive(HashMap *hm, uint8t *line) {
+    uint8t *name, *value;
+    uint8t directive[] = "#ifdef ";
+
+    name = calloc(MAX_BUFFER, sizeof(uint8t)); 
+    value = calloc(MAX_BUFFER, sizeof(uint8t)); 
+
+    printf("BEFORE FIND_K_V %s\n", line);
+    find_key_value(hm, line, name, value, directive);
+    printf("AFTER FIND_K_V %s\n", line);
+
+    return hm->exists(hm, name) != -ENOEXISTS ? true : false;
 }
 
 
@@ -173,35 +205,72 @@ uint8t **read_file(HashMap *hm, int32t *lines) {
     return file_content;   
 }
 
-void preprocess_file(HashMap *hm) {
+uint8t** preprocess_file(HashMap *hm, int32t *final_lines_count) {
     int32t lines = 0;
     uint8t **file_content = read_file(hm, &lines);
-    uint8t *tmp;
+    uint8t *tmp, *tmp_endif;
     int32t i = 0;
-
-    for (i = 0; i < lines; ++i) {
-        printf("%s", file_content[i]);
-    }
+    
+    int32t result_line = 0;
+    uint8t **result_file = calloc(lines, sizeof(uint8t*));
 
     for (i = 0; i < lines; ++i) {
         if ((tmp = strstr(file_content[i], "#define")) && tmp != NULL && tmp == file_content[i]) {
             preprocess_define_directive(hm, file_content[i]);
+            continue;
         }
 
         
         if ((tmp = strstr(file_content[i], "#undef")) && tmp != NULL && tmp == file_content[i]) {
-            preprocess_define_directive(hm, file_content[i]);
+            preprocess_undef_directive(hm, file_content[i]);
+            continue;
         }
+
+        if ((tmp = strstr(file_content[i], "#ifdef")) && tmp != NULL && tmp == file_content[i]) {
+            Bool defined = preprocess_ifdef_directive(hm, file_content[i]);
+            printf("%s: %d\n", file_content[i], defined);
+            i++;
+
+            while (strstr(file_content[i], "#endif") == NULL) {
+                if (defined) {
+                    result_file[result_line] = calloc(strlen(file_content[i]) + 1, sizeof(uint8t));
+                    strcpy(result_file[result_line], file_content[i]);
+                    ++result_line;
+                }
+                ++i;
+            }
+            continue;
+        }
+
+        result_file[result_line] = calloc(strlen(file_content[i]), sizeof(uint8t));
+        strcpy(result_file[result_line++], file_content[i]);
     }
+
+    for (i = 0; i < lines; ++i)
+        free(file_content[i]);
+    free(file_content);
+
+    for (i = result_line; i < lines; ++i) {
+        free(result_file[i]);
+    }
+
+    *final_lines_count = result_line;
+    return result_file;
 }
 
 
 int main(int argc, char** argv) {
+    int32t lines = 0, i = 0;
+
     HashMap* hm = _HashMap_new();
     
     parse_args(hm, argc - 1, argv + 1);
 
-    preprocess_file(hm);
+    uint8t **result = preprocess_file(hm, &lines);
+
+    for (i = 0; i < lines; ++i) {
+        printf("%s", result[i]);
+    }
 
     hm->print(hm);
      

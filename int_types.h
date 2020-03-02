@@ -2,6 +2,8 @@
 #define __INT_TYPES_H__
 
 #define ENOEXISTS 0x1
+#define MAX_BUFFER 1 << 10
+
 
 typedef unsigned char          uint8t;
 typedef char                   int8t;
@@ -16,6 +18,7 @@ typedef enum Bool {
     false = 0,
     true = 1
 } Bool;
+
 
 
 #endif
