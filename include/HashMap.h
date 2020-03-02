@@ -2,10 +2,12 @@
 #define __HASHMAP_H__
 
 #include "int_types.h"
+#include "utils.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 
 typedef struct HashMap {
     uint8t** keys;
