@@ -1,7 +1,8 @@
 #include "utils.h"
 
-inline void DIE(int32t error) {
-    exit(error);
+inline void DIE(Bool exit_condition, int32t error) {
+    if (exit_condition)
+        exit(error);
 }
 
 int32t number_from_string(uint8t *string, int32t *offset) {
@@ -15,18 +16,23 @@ int32t number_from_string(uint8t *string, int32t *offset) {
     return result;
 }
 
-uint8t* strrep(uint8t **string, uint8t *old_str, uint8t *new_str) {
-    uint8t *start = strstr(*string, old_str);
+uint8t* strrep(uint8t **string, uint8t *old_str, uint8t *new_str, int32t offset) {
+    uint8t *start = strstr(*string + offset, old_str);
 
     if (start == NULL) {
         return NULL;
     }
 
-    uint8t *result = calloc(strlen(*string) - strlen(old_str) + strlen(new_str) + 1, sizeof(uint8t));
+    uint8t *result = calloc(1024, sizeof(uint8t));
+
+    // printf("OLD: %s\n", *string);
 
     strncpy(result, *string, start - *string);
     strcat(result, new_str);
     strcat(result, start + strlen(old_str));
+
+    // printf("NEW : %s\n", result);  /21 25
+
 
     free(*string);
     *string = result;
@@ -61,4 +67,18 @@ uint8t* string_from_number(int32t number) {
 
     free(result_rev);
     return result;
+}
+
+Bool is_empty_string(uint8t *string) {
+    uint16t size = strlen(string);
+    int32t i = 0;
+
+    if (size == 0)
+        return true;
+
+    for (i = 0; i < size; ++i)
+        if (string[i] != '\t' && string[i] != '\n' && string[i] != ' ' && string[i] != '\r')
+            return false;
+
+    return true;
 }

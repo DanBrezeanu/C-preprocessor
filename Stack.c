@@ -62,7 +62,7 @@ Bool _Stack_empty(Stack *st) {
 void _Stack_destroy(Stack **st) {
     int32t i = 0;
     for (i = 0; i < (*st)->size; ++i) {
-        free((*st)->array + i * (*st)->sizeofElement);
+        free((int8t*)(*st)->array + i * (*st)->sizeofElement);
     }
     
     free((*st)->array);

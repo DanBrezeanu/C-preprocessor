@@ -1,16 +1,4 @@
-CC=gcc
-CFLAGS=-Wall -Wextra -Wno-pointer-sign -Wno-sign-compare -Wno-implicit-function-declaration --std=gnu89 -g
-
-SOURCES=main.c Stack.c HashMap.c parse_args.c polish_notation.c utils.c preprocessor.c
-EXEC=so-cpp
-
-INCLUDE=-I include/
-
-.PHONY:	build
-
-
 build:
-	$(CC) $(SOURCES) $(CFLAGS) $(INCLUDE) -o $(EXEC)
-
+	cl.exe /MD /Iinclude/ utils.c main.c Stack.c HashMap.c parse_args.c polish_notation.c  preprocessor.c /oso-cpp.exe
 clean:
-	rm -rf *.o so polish
+	del so-cpp.exe *.obj

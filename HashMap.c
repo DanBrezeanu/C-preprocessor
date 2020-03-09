@@ -17,9 +17,7 @@ HashMap* _HashMap_new() {
     hm->keys = calloc(hm->capacity, sizeof(uint8t*));
     hm->values = calloc(hm->capacity, sizeof(uint8t*));
 
-    if (hm->keys == NULL || hm->values == NULL) {
-        DIE(ENOMEM);
-    }
+    // DIE(hm->keys == NULL || hm->values == NULL, ENOMEM);
 
     return hm;   
 }
@@ -30,10 +28,8 @@ Bool _HashMap_addValue(HashMap *self, uint8t *key, uint8t *value) {
         self->keys[existing_index] = realloc(self->keys[existing_index], (strlen(key) + 1) * sizeof(uint8t));
         self->values[existing_index] = realloc(self->values[existing_index], (strlen(value) + 1) * sizeof(uint8t));
 
-        if (self->keys[existing_index] == NULL || self->values[existing_index] == NULL) {
-            DIE(ENOMEM);
-        }
-
+        // DIE(self->keys[existing_index] == NULL || self->values[existing_index] == NULL, ENOMEM);
+        
         strcpy(self->keys[existing_index], key);
         strcpy(self->values[existing_index], value);
 
@@ -44,18 +40,14 @@ Bool _HashMap_addValue(HashMap *self, uint8t *key, uint8t *value) {
         self->capacity <<= 1;
         self->keys = realloc(self->keys, self->capacity * sizeof(uint8t*));
         self->values = realloc(self->values, self->capacity * sizeof(uint8t*));
-
-        if (self->keys == NULL || self->values == NULL) {
-            DIE(ENOMEM);
-        }
+        
+        // DIE(self->keys == NULL || self->values == NULL, ENOMEM);
     }
 
     self->keys[self->count_entries] = calloc(strlen(key) + 1, sizeof(uint8t));
     self->values[self->count_entries] = calloc(strlen(value) + 1, sizeof(uint8t));
 
-    if (self->keys == NULL || self->values == NULL) {
-        DIE(ENOMEM);
-    }
+    // DIE(self->keys == NULL || self->values == NULL, ENOMEM);
 
     strcpy(self->keys[self->count_entries], key);
     strcpy(self->values[self->count_entries], value);
@@ -97,12 +89,13 @@ uint8t** _HashMap_getValues(HashMap *self) {
 
 
 Bool _HashMap_remove(HashMap *self, uint8t *key) {
-    if (!self->exists(self, key))
+    if (self->exists(self, key) == -ENOEXISTS)
         return false;
     
     int32t i = 0;
     Bool found = false;
 
+    
     for (i = 0; i < self->count_entries; ++i) {
         if (!found && strcmp(self->keys[i], key) == 0) {
             found = true;
