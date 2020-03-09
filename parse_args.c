@@ -2,12 +2,12 @@
 #include "HashMap.h"
 #include <string.h>
 
-void _define_arg(HashMap* hm, int8t* arg) {
-    int8t *key = strtok(arg, "=");
-    int8t *value = strtok(NULL, "=");
+void _define_arg(HashMap* hm, char* arg) {
+    char *key = strtok(arg, "=");
+    char *value = strtok(NULL, "=");
 
     if (value == NULL) {
-        value = calloc(3, sizeof(int8t));
+        value = calloc(3, sizeof(char));
         strcpy(value, "\"\"");
         hm->addValue(hm, key, value);
         free(value);
@@ -18,17 +18,17 @@ void _define_arg(HashMap* hm, int8t* arg) {
     
 }
 
-void _include_arg(HashMap *hm, int8t* arg, uint8t **includes, int32t *n_includes) {
+void _include_arg(HashMap *hm, char* arg, char **includes, int *n_includes) {
     strcpy(includes[*n_includes], arg);
     includes[*n_includes][strlen(includes[*n_includes]) + 1] = '\0';
     includes[*n_includes][strlen(includes[*n_includes])] = '/';
     ++n_includes;
 }
 
-Bool parse_args(HashMap* hm, int32t argc, int8t** argv, uint8t **includes, int32t *n_includes) {
-    int32t i = 0;
-    int8t *input_file = NULL;
-    int8t *out_file = NULL;
+Bool parse_args(HashMap* hm, int argc, char** argv, char **includes, int *n_includes) {
+    int i = 0;
+    char *input_file = NULL;
+    char *out_file = NULL;
 
     for (i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "-D") == 0) {

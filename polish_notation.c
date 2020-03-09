@@ -1,15 +1,15 @@
 #include "Stack.h"
 #include <ctype.h>
 
-Bool isoperation(uint8t e) {
+Bool isoperation(char e) {
     return (strchr("()+-*/", e) != NULL);
 }
 
-uint8t* clean_expression(uint8t *exp) {
-    uint16t exp_len = strlen((int8t*)exp);
-    uint8t* new_exp = calloc(exp_len, sizeof(uint8t));
-    int32t k = 0;
-    int32t i = 0;
+char* clean_expression(char *exp) {
+    int exp_len = strlen((int8t*)exp);
+    char* new_exp = calloc(exp_len, sizeof(char));
+    int k = 0;
+    int i = 0;
 
     for (i = 0; i < exp_len; ++i) {
         if (isdigit(exp[i]) || isoperation(exp[i]))
@@ -19,7 +19,7 @@ uint8t* clean_expression(uint8t *exp) {
     return new_exp;
 }
 
-uint32t operation_priority(uint8t e) {
+int operation_priority(char e) {
     if (e == '*' || e == '/')
         return 2;
     else if (e == '+' || e == '-')
@@ -28,10 +28,10 @@ uint32t operation_priority(uint8t e) {
     return 0;
 }
 
-void evaluate_operation(uint8t operation, Stack *number_stack) {
-    int32t number2 = *(int32t*)number_stack->pop(number_stack);
-    int32t number1 = *(int32t*)number_stack->pop(number_stack);
-    int32t result = 0;
+void evaluate_operation(char operation, Stack *number_stack) {
+    int number2 = *(int*)number_stack->pop(number_stack);
+    int number1 = *(int*)number_stack->pop(number_stack);
+    int result = 0;
 
     switch (operation) {
     case '+':
@@ -54,10 +54,10 @@ void evaluate_operation(uint8t operation, Stack *number_stack) {
     number_stack->push(number_stack, &result);
 }
 
-void remove_operation(uint8t replacement, Stack *op_stack, Stack *number_stack) {
+void remove_operation(char replacement, Stack *op_stack, Stack *number_stack) {
     if (replacement == ')') {
-        while (*(uint8t*)op_stack->top(op_stack) != '(') {
-            evaluate_operation(*(uint8t*)op_stack->pop(op_stack), number_stack);
+        while (*(char*)op_stack->top(op_stack) != '(') {
+            evaluate_operation(*(char*)op_stack->pop(op_stack), number_stack);
         }
     
         op_stack->pop(op_stack);
@@ -65,16 +65,16 @@ void remove_operation(uint8t replacement, Stack *op_stack, Stack *number_stack) 
     }
 
     while (!op_stack->empty(op_stack)
-           && operation_priority(replacement) <= operation_priority(*(uint8t*)op_stack->top(op_stack)) 
-           && *(uint8t*)op_stack->top(op_stack) != '(' 
+           && operation_priority(replacement) <= operation_priority(*(char*)op_stack->top(op_stack)) 
+           && *(char*)op_stack->top(op_stack) != '(' 
            ) {
-        evaluate_operation(*(uint8t*)op_stack->pop(op_stack), number_stack);
+        evaluate_operation(*(char*)op_stack->pop(op_stack), number_stack);
     }
 
     op_stack->push(op_stack, &replacement);
 }
 
-void add_operation(uint8t operation, Stack *op_stack, Stack *number_stack) {
+void add_operation(char operation, Stack *op_stack, Stack *number_stack) {
     switch (operation) {
     case '(':
         op_stack->push(op_stack, &operation);
@@ -85,9 +85,9 @@ void add_operation(uint8t operation, Stack *op_stack, Stack *number_stack) {
         break;
 
     default:
-        if (!op_stack->empty(op_stack) && *(uint8t*)op_stack->top(op_stack) == '(')
+        if (!op_stack->empty(op_stack) && *(char*)op_stack->top(op_stack) == '(')
             op_stack->push(op_stack, &operation);
-        else if (!op_stack->empty(op_stack) && operation_priority(operation) <= operation_priority(*(uint8t*)op_stack->top(op_stack))) {
+        else if (!op_stack->empty(op_stack) && operation_priority(operation) <= operation_priority(*(char*)op_stack->top(op_stack))) {
             remove_operation(operation, op_stack, number_stack);
         } else {
             op_stack->push(op_stack, &operation);
@@ -95,30 +95,34 @@ void add_operation(uint8t operation, Stack *op_stack, Stack *number_stack) {
     }
 }
 
-int32t evaluate_expression(uint8t *expression) {
-    expression = clean_expression(expression);
+int evaluate_expression(char *expression) {
 
-    Stack *op_stack = _Stack_new(sizeof(uint8t));
-    Stack *number_stack = _Stack_new(sizeof(int32t));
-    uint32t expression_length = strlen((int8t*)expression);
-    int32t i = 0;
-    int32t result = 0;
+    Stack *op_stack = _Stack_new(sizeof(char));
+    Stack *number_stack = _Stack_new(sizeof(int));
+    int expression_length = strlen((int8t*)expression);
+    int i = 0;
+    int result = 0;
+    int* popped;
+    int offset = 0;
+    int number;
+    
+    expression = clean_expression(expression);
     
     for (i = 0; i < expression_length; ++i) {
         if (isoperation(expression[i])) {
             add_operation(expression[i], op_stack, number_stack);
         } else if (isdigit(expression[i])) {
-            int32t offset = 0;
-            int32t number = number_from_string(expression + i, &offset);
+            offset = 0;
+            number = number_from_string(expression + i, &offset);
             number_stack->push(number_stack, &number);
             i += offset - 1;
         }
     }
 
     while (!op_stack->empty(op_stack))
-        evaluate_operation(*(uint8t*)op_stack->pop(op_stack), number_stack);
+        evaluate_operation(*(char*)op_stack->pop(op_stack), number_stack);
 
-    int32t* popped = (int32t*)number_stack->pop(number_stack);
+    popped = (int*)number_stack->pop(number_stack);
     result = *popped;
     free(popped);
 
@@ -131,8 +135,8 @@ int32t evaluate_expression(uint8t *expression) {
 
 
 // int main() {
-//     uint8t exp[] = "( (   5 +  3 ) * 2   + 5  * 7) /2\n\n*2";
-//     int32t result = evaluate_expression(exp);
+//     char exp[] = "( (   5 +  3 ) * 2   + 5  * 7) /2\n\n*2";
+//     int result = evaluate_expression(exp);
 
 //     printf("%d\n", result);
 

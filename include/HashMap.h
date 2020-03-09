@@ -10,30 +10,30 @@
 #include <ctype.h>
 
 typedef struct HashMap {
-    uint8t** keys;
-    uint8t** values;
+    unschart** keys;
+    unschart** values;
     uint32t count_entries;
     uint32t capacity;
 
-    Bool (*addValue) (struct HashMap *self, uint8t *key, uint8t *value);
+    Bool (*addValue) (struct HashMap *self, unschart *key, unschart *value);
     void (*print) (struct HashMap *self);
-    uint8t* (*getValue) (struct HashMap *self, uint8t *key);
-    uint8t** (*getKeys) (struct HashMap *self);
-    uint8t** (*getValues) (struct HashMap *self);
-    int32t (*exists) (struct HashMap *self, uint8t *key);
-    Bool (*remove) (struct HashMap *self, uint8t *key);
+    unschart* (*getValue) (struct HashMap *self, unschart *key);
+    unschart** (*getKeys) (struct HashMap *self);
+    unschart** (*getValues) (struct HashMap *self);
+    int32t (*exists) (struct HashMap *self, unschart *key);
+    Bool (*remove) (struct HashMap *self, unschart *key);
     void (*destroy) (struct HashMap **self);
 
 } HashMap;
 
 HashMap* _HashMap_new();
-Bool _HashMap_addValue(HashMap *self, uint8t *key, uint8t *value);
+Bool _HashMap_addValue(HashMap *self, unschart *key, unschart *value);
 void _HashMap_print(HashMap *self);
-uint8t* _HashMap_getValue(HashMap *self, uint8t *key);
-uint8t** _HashMap_getValues(HashMap *self);
-uint8t** _HashMap_getKeys(HashMap *self);
-Bool _HashMap_remove(HashMap *self, uint8t *key);
-int32t _HashMap_exists(HashMap *self, uint8t *key);
+unschart* _HashMap_getValue(HashMap *self, unschart *key);
+unschart** _HashMap_getValues(HashMap *self);
+unschart** _HashMap_getKeys(HashMap *self);
+Bool _HashMap_remove(HashMap *self, unschart *key);
+int32t _HashMap_exists(HashMap *self, unschart *key);
 void _HashMap_destroy(HashMap **self);
 
 

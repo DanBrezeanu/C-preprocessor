@@ -5,7 +5,7 @@
 #define MAX_BUFFER 1 << 10
 
 
-typedef unsigned char          uint8t;
+typedef unsigned char          unschart;
 typedef char                   int8t;
 typedef unsigned short         uint16t;
 typedef short                  int16t;

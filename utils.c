@@ -1,12 +1,11 @@
 #include "utils.h"
+// inline void DIE(Bool exit_condition, int error) {
+//     if (exit_condition)
+//         exit(error);
+// }
 
-inline void DIE(Bool exit_condition, int32t error) {
-    if (exit_condition)
-        exit(error);
-}
-
-int32t number_from_string(uint8t *string, int32t *offset) {
-    int32t result = 0;
+int number_from_string(char *string, int *offset) {
+    int result = 0;
     
     do {
         result = result * 10 + *string - '0';
@@ -16,14 +15,14 @@ int32t number_from_string(uint8t *string, int32t *offset) {
     return result;
 }
 
-uint8t* strrep(uint8t **string, uint8t *old_str, uint8t *new_str, int32t offset) {
-    uint8t *start = strstr(*string + offset, old_str);
+char* strrep(char **string, char *old_str, char *new_str, int offset) {
+    char *start = strstr(*string + offset, old_str);
+    char *result = calloc(1024, sizeof(char));
 
     if (start == NULL) {
         return NULL;
     }
 
-    uint8t *result = calloc(1024, sizeof(uint8t));
 
     // printf("OLD: %s\n", *string);
 
@@ -41,25 +40,27 @@ uint8t* strrep(uint8t **string, uint8t *old_str, uint8t *new_str, int32t offset)
 }
 
 
-uint8t* string_from_number(int32t number) {
-    int32t number_digits = 0;
-    int32t number_copy = number;
-    int32t reversed_number =  0;
+char* string_from_number(int number) {
+    int number_digits = 0;
+    int number_copy = number;
+    int reversed_number =  0;
+    char *result_rev, *result;
+    int i = 0;
 
     while(number_copy) {
         number_digits += 1;
         number_copy /= 10;
     }
 
-    uint8t *result_rev = calloc(number_digits + 3, sizeof(uint8t));
-    int32t i = 0;
+    result_rev = calloc(number_digits + 3, sizeof(char));
+    i = 0;
     
     while (number) {
         result_rev[i++] = '0' + number % 10;
         number /= 10;
     }
 
-    uint8t *result = calloc(number_digits + 3, sizeof(uint8t));
+    result = calloc(number_digits + 3, sizeof(char));
 
     for (i = strlen(result_rev) - 1; i >= 0; --i) {
         result[strlen(result_rev) - i - 1] = result_rev[i];
@@ -69,9 +70,9 @@ uint8t* string_from_number(int32t number) {
     return result;
 }
 
-Bool is_empty_string(uint8t *string) {
-    uint16t size = strlen(string);
-    int32t i = 0;
+Bool is_empty_string(char *string) {
+    int size = strlen(string);
+    int i = 0;
 
     if (size == 0)
         return true;

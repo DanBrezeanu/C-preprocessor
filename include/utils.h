@@ -3,8 +3,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-void DIE(Bool exit_condition, int32t error);
-int32t number_from_string(uint8t *string, int32t *offset);
-int32t number_from_string(uint8t *string, int32t *offset);
-uint8t* string_from_number(int32t number);
-Bool is_empty_string(uint8t *string);
+// void DIE(Bool exit_condition, int32t error);
+int number_from_string(char *string, int *offset);
+int number_from_string(char *string, int *offset);
+char* string_from_number(int number);
+Bool is_empty_string(char *string);
