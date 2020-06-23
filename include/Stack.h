@@ -1,17 +1,13 @@
 #ifndef __STACK_H__
 #define __STACK_H__
 
-#include "int_types.h"
-
-#include <stdlib.h>
+#include "utils.h"
 #include <stdio.h>
-#include <string.h>
-
 
 typedef struct Stack {
-    int32t size;
-    int32t capacity;
-    uint16t sizeofElement;
+    int32_t size;
+    int32_t capacity;
+    uint16_t sizeofElement;
 
     void* array;
 
@@ -22,7 +18,7 @@ typedef struct Stack {
     void (*destroy) (struct Stack **st);
 } Stack;
 
-Stack* _Stack_new(uint16t sizeofElement);
+Stack* _Stack_new(uint16_t sizeofElement);
 void _Stack_push(Stack *st, void *e);
 void* _Stack_top(Stack *st);
 void* _Stack_pop(Stack *st);

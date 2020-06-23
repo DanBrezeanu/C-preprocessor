@@ -1,7 +1,7 @@
 #include "Stack.h"
 
-Stack* _Stack_new(int sizeofElement) {
-    Stack* st = calloc(1, sizeof(Stack));
+Stack *_Stack_new(uint16_t sizeofElement) {
+    Stack *st = calloc(1, sizeof(Stack));
 
     st->capacity = 32;
     st->sizeofElement = sizeofElement;
@@ -24,16 +24,16 @@ void _Stack_push(Stack *st, void *e) {
         st->array = realloc(st->array, st->capacity * sizeof(st->sizeofElement));
     }
     
-    dest = (char*)st->array + (st->size * st->sizeofElement);
+    dest = (int8_t *)st->array + (st->size * st->sizeofElement);
     memcpy(dest, e, st->sizeofElement);
 
     ++st->size;
 }
 
-void* _Stack_top(Stack *st) {
-    int source;
-    char *returnValue;
-    int i = 0;
+void *_Stack_top(Stack *st) {
+    int32_t source;
+    int8_t *returnValue;
+    int32_t i = 0;
 
     if (st->size == 0) {
         return NULL;
@@ -43,13 +43,13 @@ void* _Stack_top(Stack *st) {
     returnValue = malloc(st->sizeofElement);
 
     for (i = 0; i < st->sizeofElement; ++i) {
-       *(returnValue + i) = *((char*)st->array + source + i);
+       *(returnValue + i) = *((int8_t *)st->array + source + i);
     }
 
-    return (void*)returnValue;
+    return (void *)returnValue;
 }
 
-void* _Stack_pop(Stack *st) {
+void *_Stack_pop(Stack *st) {
     void *returnValue;
 
     if (st->size == 0) {
@@ -67,10 +67,10 @@ Bool _Stack_empty(Stack *st) {
 }
 
 void _Stack_destroy(Stack **st) {
-    int i = 0;
+    int32_t i = 0;
     
     for (i = 0; i < (*st)->size; ++i) {
-        free((char*)(*st)->array + i * (*st)->sizeofElement);
+        free((int8_t *)(*st)->array + i * (*st)->sizeofElement);
     }
     
     free((*st)->array);

@@ -1,13 +1,12 @@
 #include "Stack.h"
-#include <ctype.h>
 
 Bool isoperation(char e) {
     return (strchr("()+-*/", e) != NULL);
 }
 
-char* clean_expression(char *exp) {
-    int exp_len = strlen((int8t*)exp);
-    char* new_exp = calloc(exp_len, sizeof(char));
+char *clean_expression(char *exp) {
+    int exp_len = strlen((int8_t *)exp);
+    char *new_exp = calloc(exp_len, sizeof(char));
     int k = 0;
     int i = 0;
 
@@ -29,8 +28,8 @@ int operation_priority(char e) {
 }
 
 void evaluate_operation(char operation, Stack *number_stack) {
-    int number2 = *(int*)number_stack->pop(number_stack);
-    int number1 = *(int*)number_stack->pop(number_stack);
+    int number2 = *(int *)number_stack->pop(number_stack);
+    int number1 = *(int *)number_stack->pop(number_stack);
     int result = 0;
 
     switch (operation) {
@@ -56,7 +55,7 @@ void evaluate_operation(char operation, Stack *number_stack) {
 
 void remove_operation(char replacement, Stack *op_stack, Stack *number_stack) {
     if (replacement == ')') {
-        while (*(char*)op_stack->top(op_stack) != '(') {
+        while (*(char *)op_stack->top(op_stack) != '(') {
             evaluate_operation(*(char*)op_stack->pop(op_stack), number_stack);
         }
     
@@ -65,9 +64,8 @@ void remove_operation(char replacement, Stack *op_stack, Stack *number_stack) {
     }
 
     while (!op_stack->empty(op_stack)
-           && operation_priority(replacement) <= operation_priority(*(char*)op_stack->top(op_stack)) 
-           && *(char*)op_stack->top(op_stack) != '(' 
-           ) {
+           && operation_priority(replacement) <= operation_priority(*(char *)op_stack->top(op_stack)) 
+           && *(char*)op_stack->top(op_stack) != '(' ) {
         evaluate_operation(*(char*)op_stack->pop(op_stack), number_stack);
     }
 
@@ -85,9 +83,9 @@ void add_operation(char operation, Stack *op_stack, Stack *number_stack) {
         break;
 
     default:
-        if (!op_stack->empty(op_stack) && *(char*)op_stack->top(op_stack) == '(')
+        if (!op_stack->empty(op_stack) && *(char *)op_stack->top(op_stack) == '(')
             op_stack->push(op_stack, &operation);
-        else if (!op_stack->empty(op_stack) && operation_priority(operation) <= operation_priority(*(char*)op_stack->top(op_stack))) {
+        else if (!op_stack->empty(op_stack) && operation_priority(operation) <= operation_priority(*(char *)op_stack->top(op_stack))) {
             remove_operation(operation, op_stack, number_stack);
         } else {
             op_stack->push(op_stack, &operation);
@@ -99,10 +97,10 @@ int evaluate_expression(char *expression) {
 
     Stack *op_stack = _Stack_new(sizeof(char));
     Stack *number_stack = _Stack_new(sizeof(int));
-    int expression_length = strlen((int8t*)expression);
+    int expression_length = strlen((int8_t *)expression);
     int i = 0;
     int result = 0;
-    int* popped;
+    int *popped;
     int offset = 0;
     int number;
     
@@ -120,9 +118,9 @@ int evaluate_expression(char *expression) {
     }
 
     while (!op_stack->empty(op_stack))
-        evaluate_operation(*(char*)op_stack->pop(op_stack), number_stack);
+        evaluate_operation(*(char *)op_stack->pop(op_stack), number_stack);
 
-    popped = (int*)number_stack->pop(number_stack);
+    popped = (int *)number_stack->pop(number_stack);
     result = *popped;
     free(popped);
 
@@ -131,15 +129,3 @@ int evaluate_expression(char *expression) {
     number_stack->destroy(&number_stack);
     return result;
 }   
-
-
-
-// int main() {
-//     char exp[] = "( (   5 +  3 ) * 2   + 5  * 7) /2\n\n*2";
-//     int result = evaluate_expression(exp);
-
-//     printf("%d\n", result);
-
-
-//     return 0;
-// }   

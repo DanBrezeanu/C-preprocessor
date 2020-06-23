@@ -1,8 +1,7 @@
-#include "int_types.h"
 #include "HashMap.h"
 #include <string.h>
 
-void _define_arg(HashMap* hm, char* arg) {
+void _define_arg(HashMap *hm, char* arg) {
     char *key = strtok(arg, "=");
     char *value = strtok(NULL, "=");
 
@@ -18,14 +17,14 @@ void _define_arg(HashMap* hm, char* arg) {
     
 }
 
-void _include_arg(HashMap *hm, char* arg, char **includes, int *n_includes) {
+void _include_arg(HashMap *hm, char *arg, char **includes, int *n_includes) {
     strcpy(includes[*n_includes], arg);
     includes[*n_includes][strlen(includes[*n_includes]) + 1] = '\0';
     includes[*n_includes][strlen(includes[*n_includes])] = '/';
     ++n_includes;
 }
 
-Bool parse_args(HashMap* hm, int argc, char** argv, char **includes, int *n_includes) {
+Bool parse_args(HashMap *hm, int argc, char **argv, char **includes, int *n_includes) {
     int i = 0;
     char *input_file = NULL;
     char *out_file = NULL;
@@ -66,11 +65,8 @@ Bool parse_args(HashMap* hm, int argc, char** argv, char **includes, int *n_incl
 
         input_file = argv[i];
     }
-
-    // printf("input_file = %s\n", (input_file == NULL) ? "stdin" : input_file);
+    
     hm->addValue(hm, "__INPUT_FILE__", (input_file) ? input_file : "stdin");
-
-    // printf("outfile_file = %s\n", (out_file == NULL) ? "stdout" : out_file);
     hm->addValue(hm, "__OUTPUT_FILE__", (out_file) ? out_file : "stdout");
 
     return true;

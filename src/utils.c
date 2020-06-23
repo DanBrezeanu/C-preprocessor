@@ -1,11 +1,12 @@
 #include "utils.h"
-// inline void DIE(Bool exit_condition, int error) {
-//     if (exit_condition)
-//         exit(error);
-// }
 
-int number_from_string(char *string, int *offset) {
-    int result = 0;
+inline void DIE(Bool exit_condition, int32_t error) {
+    if (exit_condition)
+        exit(error);
+}
+
+uint32_t number_from_string(uint8_t *string, int32_t *offset) {
+    uint32_t result = 0;
     
     do {
         result = result * 10 + *string - '0';
@@ -15,23 +16,17 @@ int number_from_string(char *string, int *offset) {
     return result;
 }
 
-char* strrep(char **string, char *old_str, char *new_str, int offset) {
-    char *start = strstr(*string + offset, old_str);
-    char *result = calloc(1024, sizeof(char));
+uint8_t *strrep(uint8_t **string, uint8_t *old_str, uint8_t *new_str, uint32_t offset) {
+    uint8_t *start = strstr(*string + offset, old_str);
+    uint8_t *result = calloc(1024, sizeof(uint8_t));
 
     if (start == NULL) {
         return NULL;
     }
 
-
-    // printf("OLD: %s\n", *string);
-
     strncpy(result, *string, start - *string);
     strcat(result, new_str);
     strcat(result, start + strlen(old_str));
-
-    // printf("NEW : %s\n", result);  /21 25
-
 
     free(*string);
     *string = result;
@@ -40,19 +35,18 @@ char* strrep(char **string, char *old_str, char *new_str, int offset) {
 }
 
 
-char* string_from_number(int number) {
-    int number_digits = 0;
-    int number_copy = number;
-    int reversed_number =  0;
-    char *result_rev, *result;
-    int i = 0;
+uint8_t *string_from_number(int32_t number) {
+    uint32_t number_digits = 0;
+    uint32_t number_copy = number;
+    uint8_t *result_rev, *result;
+    int32_t i = 0;
 
     while(number_copy) {
         number_digits += 1;
         number_copy /= 10;
     }
 
-    result_rev = calloc(number_digits + 3, sizeof(char));
+    result_rev = calloc(number_digits + 3, sizeof(uint8_t));
     i = 0;
     
     while (number) {
@@ -60,7 +54,7 @@ char* string_from_number(int number) {
         number /= 10;
     }
 
-    result = calloc(number_digits + 3, sizeof(char));
+    result = calloc(number_digits + 3, sizeof(uint8_t));
 
     for (i = strlen(result_rev) - 1; i >= 0; --i) {
         result[strlen(result_rev) - i - 1] = result_rev[i];
@@ -70,9 +64,9 @@ char* string_from_number(int number) {
     return result;
 }
 
-Bool is_empty_string(char *string) {
-    int size = strlen(string);
-    int i = 0;
+Bool is_empty_string(uint8_t *string) {
+    uint32_t size = strlen(string);
+    uint32_t i = 0;
 
     if (size == 0)
         return true;

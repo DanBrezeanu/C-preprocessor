@@ -1,8 +1,9 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Wno-pointer-sign -Wno-sign-compare -Wno-implicit-function-declaration --std=gnu89 -g
+CFLAGS=-Wall -Wextra -Wno-pointer-sign -Wno-sign-compare -Wno-implicit-function-declaration --std=gnu89
+SRC_DIR=src
 
-SOURCES=main.c Stack.c HashMap.c parse_args.c polish_notation.c utils.c preprocessor.c
-EXEC=so-cpp
+SOURCES=$(SRC_DIR)/*.c
+EXEC=preproc
 
 INCLUDE=-I include/
 
@@ -13,4 +14,4 @@ build:
 	$(CC) $(SOURCES) $(CFLAGS) $(INCLUDE) -o $(EXEC)
 
 clean:
-	rm -rf *.o so polish
+	rm -rf *.o $(EXEC)

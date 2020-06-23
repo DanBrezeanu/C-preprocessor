@@ -1,12 +1,12 @@
 #include "preprocessor.h"
 
-Bool isstring(char *value) {
+Bool isstring(uint8_t *value) {
     return (value[0] == '\"' && value[strlen(value) - 1] == '\"');
 }
 
-Bool define_in_string(char *line, int index) {
+Bool define_in_string(uint8_t *line, int32_t index) {
     Bool result1 = false, result2 = false;
-    int i = 0;
+    int32_t i = 0;
 
     for (i = index; i >= 0; --i) {
         if (line[i] == '\"') {
@@ -25,10 +25,10 @@ Bool define_in_string(char *line, int index) {
     return (result1 && result2);
 }
 
-void find_key_value(HashMap *hm, char **line, char *key, char *value, char *directive) {
-    char *start;
-    int key_len = 0;
-    int value_len = 0;
+void find_key_value(HashMap *hm, uint8_t **line, uint8_t *key, uint8_t *value, uint8_t *directive) {
+    uint8_t *start;
+    int32_t key_len = 0;
+    int32_t value_len = 0;
 
     if (strcmp(directive, "#define ") == 0 
         || strcmp(directive, "#if ") == 0
@@ -52,16 +52,16 @@ void find_key_value(HashMap *hm, char **line, char *key, char *value, char *dire
     }
 }
 
-void clean_file(char ***content, int *lines) {
-    char **new_content = calloc(*lines + 2, sizeof(char*));
-    int i = 0, j = 0;
-    int k = 0, p = 0;
-    int result_lines = *lines;
+void clean_file(uint8_t ***content, int32_t *lines) {
+    uint8_t **new_content = calloc(*lines + 2, sizeof(uint8_t*));
+    int32_t i = 0, j = 0;
+    int32_t k = 0, p = 0;
+    int32_t result_lines = *lines;
     Bool new_line = false;
-    int len;
+    int32_t len;
     
     for (i = 0; i < *lines; ++i)
-        new_content[i] = calloc(1024, sizeof(char));
+        new_content[i] = calloc(1024, sizeof(uint8_t));
 
 
     for (i = 0; i < *lines; ++i) {
@@ -92,14 +92,12 @@ void clean_file(char ***content, int *lines) {
     *lines = result_lines;
 }
 
-void replace_existing_defines(HashMap *hm, char **line) {
-    char **keys = hm->getKeys(hm);
-    char **values = hm->getValues(hm);
-    char *substr_old = *line;
-    char *substr_new = NULL;
-    int i = 0;
-
-    // TODO: find multiple defines on one line
+void replace_existing_defines(HashMap *hm, uint8_t **line) {
+    uint8_t **keys = hm->getKeys(hm);
+    uint8_t **values = hm->getValues(hm);
+    uint8_t *substr_old = *line;
+    uint8_t *substr_new = NULL;
+    int32_t i = 0;
 
     for (i = 0; i < hm->count_entries; ++i) {
         substr_new = strstr(substr_old, keys[i]);
@@ -113,12 +111,12 @@ void replace_existing_defines(HashMap *hm, char **line) {
     } 
 }
 
-void preprocess_define_directive(HashMap *hm, char *line) {
-    char *name, *value;
-    char directive[] = "#define ";
+void preprocess_define_directive(HashMap *hm, uint8_t *line) {
+    uint8_t *name, *value;
+    uint8_t directive[] = "#define ";
 
-    name = calloc(MAX_BUFFER, sizeof(char)); 
-    value = calloc(MAX_BUFFER, sizeof(char)); 
+    name = calloc(MAX_BUFFER, sizeof(uint8_t)); 
+    value = calloc(MAX_BUFFER, sizeof(uint8_t)); 
 
     find_key_value(hm, &line, name, value, directive);
 
@@ -133,12 +131,12 @@ void preprocess_define_directive(HashMap *hm, char *line) {
     free(value);
 }
 
-void preprocess_undef_directive(HashMap *hm, char *line) {
-    char *name, *value;
-    char directive[] = "#undef ";
+void preprocess_undef_directive(HashMap *hm, uint8_t *line) {
+    uint8_t *name, *value;
+    uint8_t directive[] = "#undef ";
 
-    name = calloc(MAX_BUFFER, sizeof(char)); 
-    value = calloc(MAX_BUFFER, sizeof(char)); 
+    name = calloc(MAX_BUFFER, sizeof(uint8_t)); 
+    value = calloc(MAX_BUFFER, sizeof(uint8_t)); 
 
     find_key_value(hm, &line, name, value, directive);
 
@@ -148,17 +146,17 @@ void preprocess_undef_directive(HashMap *hm, char *line) {
     free(value);
 }
 
-Bool preprocess_ifdef_directive(HashMap *hm, char *line, Bool is_ifndef) {
-    char *name, *value;
-    char *directive = calloc(10, sizeof(char));
+Bool preprocess_ifdef_directive(HashMap *hm, uint8_t *line, Bool is_ifndef) {
+    uint8_t *name, *value;
+    uint8_t *directive = calloc(10, sizeof(uint8_t));
     Bool result;
 
     if (is_ifndef)
         strcpy(directive, "#ifndef ");
     else
         strcpy(directive, "#ifdef ");
-    name = calloc(MAX_BUFFER, sizeof(char)); 
-    value = calloc(MAX_BUFFER, sizeof(char)); 
+    name = calloc(MAX_BUFFER, sizeof(uint8_t)); 
+    value = calloc(MAX_BUFFER, sizeof(uint8_t)); 
 
     find_key_value(hm, &line, name, value, directive);
 
@@ -166,19 +164,19 @@ Bool preprocess_ifdef_directive(HashMap *hm, char *line, Bool is_ifndef) {
     return (is_ifndef) ? (!result) : (result);
 }
 
-Bool preprocess_if_directive(HashMap *hm, char **line, Bool is_elif) {
-    char *name, *value;
-    char *directive = calloc(10, sizeof(char));
+Bool preprocess_if_directive(HashMap *hm, uint8_t **line, Bool is_elif) {
+    uint8_t *name, *value;
+    uint8_t *directive = calloc(10, sizeof(uint8_t));
     Bool result;
-    int real_value;
+    int32_t real_value;
 
     if (is_elif)
         strcpy(directive, "#elif ");
     else
         strcpy(directive, "#if ");
 
-    name = calloc(MAX_BUFFER, sizeof(char)); 
-    value = calloc(MAX_BUFFER, sizeof(char)); 
+    name = calloc(MAX_BUFFER, sizeof(uint8_t)); 
+    value = calloc(MAX_BUFFER, sizeof(uint8_t)); 
 
     find_key_value(hm, line, name, value, directive);
 
@@ -198,13 +196,13 @@ Bool preprocess_if_directive(HashMap *hm, char **line, Bool is_elif) {
     return result;
 }
 
-void insert_lines(char ***lines, int *total_lines, int current_line, char **to_insert, int n_to_insert) {
-    int i = 0;
+void insert_lines(uint8_t ***lines, int32_t *total_lines, int32_t current_line, uint8_t **to_insert, int32_t n_to_insert) {
+    int32_t i = 0;
 
-    char **result_lines = calloc(*total_lines + n_to_insert - 1, sizeof(char*));
+    uint8_t **result_lines = calloc(*total_lines + n_to_insert - 1, sizeof(uint8_t*));
 
     for (i = 0; i < *total_lines + n_to_insert - 1; ++i)
-        result_lines[i] = calloc(MAX_BUFFER, sizeof(char*));
+        result_lines[i] = calloc(MAX_BUFFER, sizeof(uint8_t*));
 
     for (i = 0; i < current_line; ++i) {
         strcpy(result_lines[i], (*lines)[i]);
@@ -229,20 +227,19 @@ void insert_lines(char ***lines, int *total_lines, int current_line, char **to_i
 
 }
 
-Bool preprocess_include_directive(HashMap *hm, char ***lines, int *total_lines, int current_line, char **include_dirs, int n_includes) {
-    char *name, *value, *filename;
-    char directive[] = "#include ";
-    Bool result = true;
-    int i = 0;
+Bool preprocess_include_directive(HashMap *hm, uint8_t ***lines, int32_t *total_lines, int32_t current_line, uint8_t **include_dirs, int32_t n_includes) {
+    uint8_t *name, *value, *filename;
+    uint8_t directive[] = "#include ";
+    int32_t i = 0;
 
     FILE *fd = NULL;
-    char **include_lines = NULL;
-    int include_n_lines = 0;
-    int tmp;
+    uint8_t **include_lines = NULL;
+    int32_t include_n_lines = 0;
+    int32_t tmp;
 
-    name = calloc(MAX_BUFFER, sizeof(char)); 
-    value = calloc(MAX_BUFFER, sizeof(char)); 
-    filename = calloc(MAX_BUFFER, sizeof(char)); 
+    name = calloc(MAX_BUFFER, sizeof(uint8_t)); 
+    value = calloc(MAX_BUFFER, sizeof(uint8_t)); 
+    filename = calloc(MAX_BUFFER, sizeof(uint8_t)); 
 
     find_key_value(hm, &((*lines)[current_line]), name, value, directive);
 
@@ -265,21 +262,23 @@ Bool preprocess_include_directive(HashMap *hm, char ***lines, int *total_lines, 
         }
     }
 
-    // DIE(include_dirs == NULL, -1);
+    DIE(include_dirs == NULL, -1);
 
     insert_lines(lines, total_lines, current_line, include_lines, include_n_lines);
 
     free(name);
     free(value);
+
+    return true;
 }
 
-char **read_file(HashMap *hm, int *lines, char *filename) {
-    char *in_file;
+uint8_t **read_file(HashMap *hm, int32_t *lines, uint8_t *filename) {
+    uint8_t *in_file;
     FILE *fd;
-    int buffer_max = 1 << 10;
-    char **file_content;
-    char *ret;
-    int i = 0;
+    int32_t buffer_max = 1 << 10;
+    uint8_t **file_content;
+    uint8_t *ret;
+    int32_t i = 0;
 
     if (filename == NULL) {
        in_file = hm->getValue(hm, "__INPUT_FILE__");
@@ -288,14 +287,13 @@ char **read_file(HashMap *hm, int *lines, char *filename) {
     }
 
     fd = (strcmp(in_file, "stdin") == 0) ? stdin : fopen(in_file, "rt");
-    // DIE(fd == NULL, -1);
+    DIE(fd == NULL, -1);
 
-    //TODO: realloc if necessary
-    file_content = calloc(buffer_max, sizeof(char*));
-    ret = (char*)0x1; 
+    file_content = calloc(buffer_max, sizeof(uint8_t*));
+    ret = (uint8_t *)0x1; 
 
     while(ret) {
-        file_content[*lines] = calloc(buffer_max, sizeof(char));
+        file_content[*lines] = calloc(buffer_max, sizeof(uint8_t));
         ret = fgets(file_content[*lines], buffer_max, fd);
         (*lines)++;
     }
@@ -306,15 +304,15 @@ char **read_file(HashMap *hm, int *lines, char *filename) {
     return file_content;   
 }
 
-char** preprocess_file(HashMap *hm, int *final_lines_count, char **include_dirs, int n_includes) {
-    int lines = 0;
-    char **file_content;
-    char *tmp, *tmp_endif;
-    int i = 0;
+uint8_t **preprocess_file(HashMap *hm, int32_t *final_lines_count, uint8_t **include_dirs, int32_t n_includes) {
+    int32_t lines = 0;
+    uint8_t **file_content;
+    uint8_t *tmp;
+    int32_t i = 0;
     Bool scans_line = true;
     
-    int result_line = 0;
-    char **result_file = calloc(lines, sizeof(char*));
+    int32_t result_line = 0;
+    uint8_t **result_file = calloc(lines, sizeof(uint8_t*));
     
     file_content = read_file(hm, &lines, NULL);
 
@@ -371,7 +369,7 @@ char** preprocess_file(HashMap *hm, int *final_lines_count, char **include_dirs,
 
             replace_existing_defines(hm, &file_content[i]);
             if (!is_empty_string(file_content[i])) {
-                result_file[result_line] = calloc(strlen(file_content[i]), sizeof(char));
+                result_file[result_line] = calloc(strlen(file_content[i]), sizeof(uint8_t));
                 strcpy(result_file[result_line++], file_content[i]);
             }
         }
@@ -380,12 +378,12 @@ next:
     continue;
     }
 
-    // for (i = 0; i < lines; ++i) {
-    //     if (file_content[i] != NULL) {
-    //         free(file_content[i]);
-    //         file_content[i] = NULL;
-    //     }
-    // }
+    for (i = 0; i < lines; ++i) {
+        if (file_content[i] != NULL) {
+            free(file_content[i]);
+            file_content[i] = NULL;
+        }
+    }
 
     free(file_content);
     *final_lines_count = result_line;
